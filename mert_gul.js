@@ -9,7 +9,7 @@
                     margin: 0;
                     padding: 0;
                     box-sizing: border-box;
-                    
+                    font-family: Poppins, "cursive";
                 }
 
                 .container {
@@ -80,11 +80,48 @@
                     padding: 1rem;
                 }
 
+                .product-item:hover{
+                    border: 2px;
+                    border-color: ${primaryColor};
+                }
+
                 .product-item img{
                     max-width: 100%;
                     height: 203px;
                     object-fit: contain;
                 }
+
+                .title{
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    font-family: Poppins, "cursive";
+                    overflow:hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .btn-product{
+                    background-color: #fff7ec;
+                    border-radius: 37.5px;
+                    font-size: 1.4rem;
+                    font-weight: 700;
+                    font-family: Poppins, "cursive";
+                    color: ${primaryColor};
+                    border: 1px solid ${primaryColor};
+                    padding: 15px 20px;
+                }
+                @media (max-width: 1200px){
+                    .title-primary{
+                        font-size: 2rem;
+                    }
+                }
+
+                @media (max-width: 768px){
+                    .title-primary{
+                        font-size: 20px;
+                    }
+                }
+
             `;
 
         const init = () => {
@@ -95,7 +132,11 @@
         };
         
         const buildHTML = () =>{
-            let carouselItem ;
+            var link = document.createElement('link');
+            link.type = 'text/css';
+            link.rel = "stylesheet";
+            link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css";
+            document.head.appendChild(link);
             const container = document.createElement("div");
             container.className = "container";
             
@@ -105,7 +146,7 @@
                 <i class="fas fa-arrow-left"></i>
                 <div class="carousel-wrapper">
                     <div class="banner-titles">
-                        <h2 class="title-primary">Beğenebileceğinizi düşündüklerimiz</h2>
+                        <h4 class="title-primary">Beğenebileceğinizi düşündüklerimiz</h4>
                     </div>
                     <div class="slider">
                         <div class="inner-slider">    
@@ -116,10 +157,38 @@
             </div>
             `;
 
-
             document.body.appendChild(container);
 
             container.innerHTML = html;
+
+            const innerSlider = document.querySelector('.inner-slider');
+            innerSlider.innerHTML = "";
+            if(fetchedProducts){
+                fetchedProducts.forEach((product) => {
+                    if(product.price === product.original_price){
+                        innerSlider.innerHTML += `
+                            <div class="product-item">
+                                <img src="${product.img}" alt="${product.name}">
+                                <h4 class="title">${product.name}</h4>
+                                <h3>${product.price} TL</h3>
+                                <button class="btn-product">Sepete Ekle</button>
+                            <div>
+    
+                        `;
+                    }else{
+                        innerSlider.innerHTML += `
+                            <div class="product-item">
+                                <img src="${product.img}" alt="${product.name}">
+                                <h4>${product.name}</h4>
+                                <h4>${product.original_price}</h4>
+                                <h3>${product.price}</h3>
+                                <button #addProduct>Sepete Ekle</button>
+                            <div>
+    
+                        `;
+                    }
+                })
+            }
         };
 
         const buildCSS = () =>{
@@ -141,19 +210,56 @@
         }
 
         const setEvents = () => {
-            const innerSlider = document.querySelector('.inner-slider');
-            innerSlider.innerHTML = "";
-            if(fetchedProducts){
-                fetchedProducts.forEach((product) => {
-                    innerSlider.innerHTML += `
-                        <div class="product-item">
-                            <img src="${product.img}" alt="${product.name}">
-                            <h2>${product.name}</h2>
-                        <div>
+            let slider = document.querySelector('.slider');
+            let innerSlider = document.querySelector('.inner-slider');
+            let product = document.querySelector('.product-item');
 
-                    `
-                    
-                })
+            let pressed= false;
+            let startx;
+            let x;
+
+            product.addEventListener('mousedown', (e)=>{
+                console.log("clicked the product");
+            })
+
+            slider.addEventListener('mousedown', (e)=>{
+                pressed = true;
+                startx = e.offsetX - innerSlider.offsetLeft;
+                slider.style.cursor = 'grabbing'
+            });
+
+            slider.addEventListener('mouseenter',()=> {
+                slider.style.cursor = 'grab'
+            });
+            slider.addEventListener('mouseup',()=> {
+                slider.style.cursor = 'grab'
+            });
+            
+            window.addEventListener('mouseup',()=>{
+                pressed = false;
+            })
+
+            slider.addEventListener('mousemove',(e)=>{
+                if(!pressed) return;
+                e.preventDefault();
+
+                x = e.offsetX;
+
+                innerSlider.style.left = `${x - startx}px`;
+                console.log(innerSlider.style.left);
+
+                checkBoundry();
+            })
+
+            function checkBoundry() {
+                let outer = slider.getBoundingClientRect();
+                let inner = innerSlider.getBoundingClientRect();
+                
+                if(parseInt(innerSlider.style.left) > 0){
+                    innerSlider.style.left = '0px';
+                }else if(inner.right < outer.right){
+                    innerSlider.style.left = `-${inner.width - outer.width}px`
+                }
             }
         };
 
