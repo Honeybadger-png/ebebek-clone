@@ -20,7 +20,38 @@
                     justify-content: center;
                     align-items: center;
                     display: flex;
+                    gap: 10px;
                     height: 100vh;
+                }
+
+                .prev-swiper{
+                    background-color: #fef6eb;
+                    color: ${primaryColor};
+                    border-radius: 100%;
+                    font-size: 1rem;
+                    border: 2px solid transparent;
+                    padding: 16px;
+                }
+
+                .next-swiper{
+                    background-color: #fef6eb;
+                    color: ${primaryColor};
+                    font-size: 1rem;
+                    border: 2px solid transparent;
+                    border-radius: 100%;
+                    padding: 16px;
+                }
+
+                .prev-swiper:hover {
+                    background-color: white;
+                    cursor: pointer;
+                    border: 2px solid ${primaryColor};
+                }
+
+                .next-swiper:hover{
+                    background-color: white;
+                    cursor: pointer;
+                    border: 2px solid ${primaryColor};                    
                 }
 
                 .carousel-wrapper{
@@ -59,7 +90,7 @@
                 .slider{
                     position: relative;
                     width: 100%;
-                    height: 400px;
+                    height: 500px;
                     overflow: hidden;
                 }
 
@@ -69,20 +100,19 @@
                     left: 0;
                     height: 100%;
                     display: flex;
-                    gap: 5px;
-                    pointer-events: none;
                 }
 
                 .product-item{
+                    border: 2px solid transparent;
                     width: 230px;
-                    height: 100%;
+                    heigh: 450px;
                     text-align: center;
-                    padding: 1rem;
                 }
 
                 .product-item:hover{
-                    border: 2px;
-                    border-color: ${primaryColor};
+                    border: 2px solid ${primaryColor};
+                    cursor: pointer;
+                    border-radius: 8px;
                 }
 
                 .product-item img{
@@ -142,8 +172,10 @@
             
 
             const html = `
-            <div class="carousel-container"> 
-                <i class="fas fa-arrow-left"></i>
+            <div class="carousel-container">
+                <button class="prev-swiper">
+                    <i class="fas fa-arrow-left"></i>
+                </button> 
                 <div class="carousel-wrapper">
                     <div class="banner-titles">
                         <h4 class="title-primary">Beğenebileceğinizi düşündüklerimiz</h4>
@@ -153,7 +185,9 @@
                         </div>
                     </div>
                 </div>
-                <i class="fas fa-arrow-right"></i>
+                <button class="next-swiper">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
             `;
 
@@ -179,10 +213,10 @@
                         innerSlider.innerHTML += `
                             <div class="product-item">
                                 <img src="${product.img}" alt="${product.name}">
-                                <h4>${product.name}</h4>
+                                <h4 class="title">${product.name}</h4>
                                 <h4>${product.original_price}</h4>
                                 <h3>${product.price}</h3>
-                                <button #addProduct>Sepete Ekle</button>
+                                <button class="btn-product">Sepete Ekle</button>
                             <div>
     
                         `;
@@ -212,55 +246,41 @@
         const setEvents = () => {
             let slider = document.querySelector('.slider');
             let innerSlider = document.querySelector('.inner-slider');
-            let product = document.querySelector('.product-item');
+            let products = document.querySelectorAll('.product-item');
+            let prevButton = document.querySelector('.prev-swiper');
+            let nextButton = document.querySelector('.next-swiper');
+            let productContainer = document.querySelector('.product-item');
+            let productContainerWidth = productContainer.getBoundingClientRect().width;
 
-            let pressed= false;
-            let startx;
-            let x;
+            let x = 0;
 
-            product.addEventListener('mousedown', (e)=>{
-                console.log("clicked the product");
+            products.forEach((product)=> {
             })
 
-            slider.addEventListener('mousedown', (e)=>{
-                pressed = true;
-                startx = e.offsetX - innerSlider.offsetLeft;
-                slider.style.cursor = 'grabbing'
-            });
-
-            slider.addEventListener('mouseenter',()=> {
-                slider.style.cursor = 'grab'
-            });
-            slider.addEventListener('mouseup',()=> {
-                slider.style.cursor = 'grab'
-            });
-            
-            window.addEventListener('mouseup',()=>{
-                pressed = false;
+            prevButton.addEventListener('mousedown', (e)=>{
+                let moveAmount = productContainerWidth;
+                x = x + moveAmount
+                if(x > 0){
+                    x = 0;
+                    innerSlider.style.left = '0px';
+                }else{
+                    innerSlider.style.left = `${x}px`;
+                }
             })
 
-            slider.addEventListener('mousemove',(e)=>{
-                if(!pressed) return;
-                e.preventDefault();
-
-                x = e.offsetX;
-
-                innerSlider.style.left = `${x - startx}px`;
-                console.log(innerSlider.style.left);
-
-                checkBoundry();
-            })
-
-            function checkBoundry() {
+            nextButton.addEventListener('mousedown',(e)=>{
                 let outer = slider.getBoundingClientRect();
                 let inner = innerSlider.getBoundingClientRect();
-                
-                if(parseInt(innerSlider.style.left) > 0){
-                    innerSlider.style.left = '0px';
-                }else if(inner.right < outer.right){
-                    innerSlider.style.left = `-${inner.width - outer.width}px`
+                let moveAmount = productContainerWidth;
+                x = x - moveAmount
+
+                if(-x > (inner.width - outer.width)){
+                    x = -(inner.width - outer.width);
+                    innerSlider.style.left = `${x}px`
+                }else{
+                    innerSlider.style.left = `${x}px`
                 }
-            }
+            })
         };
 
         init();
